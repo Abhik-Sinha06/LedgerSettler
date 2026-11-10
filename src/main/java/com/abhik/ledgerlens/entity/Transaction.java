@@ -29,6 +29,10 @@ import java.util.UUID;
                 @UniqueConstraint(
                         name = "uk_transactions_sender_idempotency",
                         columnNames = {"sender_account_id", "idempotency_key"}
+                ),
+                @UniqueConstraint(
+                        name = "uk_transactions_deposit_idempotency",
+                        columnNames = {"receiver_account_id", "deposit_idempotency_key"}
                 )
         }
 )
@@ -46,10 +50,9 @@ public class Transaction {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "sender_account_id",
-            nullable = false,
             foreignKey = @ForeignKey(name = "fk_transactions_sender_account_id")
     )
     private Account senderAccount;
@@ -67,6 +70,14 @@ public class Transaction {
 
     @Column(name = "reference_id", nullable = false, unique = true)
     private String referenceId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_type", nullable = false)
+    @Builder.Default
+    private TransactionType transactionType = TransactionType.TRANSFER;
+
+    @Column(name = "deposit_idempotency_key")
+    private String depositIdempotencyKey;
 
     @Column(name = "amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;

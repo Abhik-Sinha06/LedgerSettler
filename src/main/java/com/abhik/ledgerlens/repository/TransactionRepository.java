@@ -1,6 +1,7 @@
 package com.abhik.ledgerlens.repository;
 
 import com.abhik.ledgerlens.entity.Transaction;
+import com.abhik.ledgerlens.entity.TransactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
 
     Optional<Transaction> findBySenderAccountIdAndIdempotencyKey(UUID senderAccountId, String idempotencyKey);
 
-    @Query("SELECT t FROM Transaction t WHERE t.senderAccount.id IN :accountIds OR t.receiverAccount.id IN :accountIds")
+    Optional<Transaction> findByReceiverAccountIdAndTransactionTypeAndIdempotencyKey(
+            UUID receiverAccountId,
+            TransactionType transactionType,
+            String idempotencyKey
+    );
+
+    @Query("SELECT t FROM Transaction t LEFT JOIN t.senderAccount s WHERE s.id IN :accountIds OR t.receiverAccount.id IN :accountIds")
     Page<Transaction> findBySenderAccountIdInOrReceiverAccountIdIn(@Param("accountIds") List<UUID> accountIds, Pageable pageable);
 }

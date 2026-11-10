@@ -77,10 +77,13 @@ public class TransactionService {
                 .map(Account::getId)
                 .collect(Collectors.toSet());
 
-        UUID senderId = transaction.getSenderAccount().getId();
+        UUID senderId = transaction.getSenderAccount() == null
+                ? null
+                : transaction.getSenderAccount().getId();
         UUID receiverId = transaction.getReceiverAccount().getId();
 
-        if (!userAccountIds.contains(senderId) && !userAccountIds.contains(receiverId)) {
+        if ((senderId == null || !userAccountIds.contains(senderId))
+                && !userAccountIds.contains(receiverId)) {
             throw new UnauthorizedAccountAccessException(
                     "You do not have access to this transaction.");
         }
@@ -104,7 +107,9 @@ public class TransactionService {
     static TransactionResponse getTransactionResponse(Transaction transaction) {
         TransactionResponse response = new TransactionResponse();
         response.setTransactionId(transaction.getId());
-        response.setSenderAccountId(transaction.getSenderAccount().getId());
+        response.setSenderAccountId(transaction.getSenderAccount() == null
+                ? null
+                : transaction.getSenderAccount().getId());
         response.setReceiverAccountId(transaction.getReceiverAccount().getId());
         response.setCurrency(transaction.getCurrency());
         response.setAmount(transaction.getAmount());
